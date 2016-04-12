@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF8">
+<head>
+	<title>ajax test</title>
+	<script type="text/javascript" src="jquery.min.js"></script>
+</head>
+<body>
+<div class="header">
+	<p>这是在测试ajax 滚动加载</p>
+    <button id="loadBtn">Load</button>
+</div>
+
+<div class="debug">
+
+</div>
+
+<div class="showbox">
+
+</div>
+
+<div class="footer">
+<p>这里是footer</p>
+</div>
+<!--数据加载提示，默认隐藏-->
+<div class="add-more">数据正在加载...</div>
+<script type="text/javascript">
+    $(function(){
+        var downrange    = 100;                //下边界-参考正在加载提示层/px
+        var num = 1;                //初始页码
+        var maxnum = 5;                    //设置加载次数
+        var $main = $(".showbox");            //主体
+        var $loaddiv = $(".add-more")        //加载提示层
+        var $debugdiv = $(".debug")
+        var totalheight = 0;       
+        var mainheight = 0;        
+        //判断是否需要异步
+        function ifLoad(){
+            //滚动条距离顶部距离
+            var scrolltotop=parseFloat($(window).scrollTop());
+            //窗口高度
+            var winheight = parseFloat($(window).height());
+            //内容总高度
+            var conheight = parseFloat($(document).height())-downrange; 
+            
+             mainheight = parseFloat($main.height());
+            //总高度
+            totalheight = scrolltotop + winheight;
+
+            //判断是否加载，当操作高度比内容大，空间充裕->加载
+            if(totalheight >= conheight ){
+                ajaxLoad(num,1);
+                num++;
+            }
+            $debugdiv.text("totalheight:"+totalheight +" conheight：" +conheight +" mainheight:"+mainheight);
+
+        }
+
+        //ajax-fun
+        function ajaxLoad(page,shownum){
+            $.ajax({
+                url:"result.php",
+                type:"post",
+                data:{startid:num,shownum:shownum},
+                success:function(result){
+                    if(result){
+                        $main.append(result);
+                    }     
+                    else{
+                        //$main.append("<p>no more</p>");
+                    }   
+                }
+            })
+        }
+
+        //加载中隐藏显示
+        $loaddiv.ajaxStart(function(){
+             $(this).show();
+            }).ajaxStop(function(){
+                $(this).hide();
+            })
+
+            
+        function firstLoad(){
+            
+            //滚动条距离顶部距离
+            var scrolltotop=parseFloat($(window).scrollTop());
+            //窗口高度
+            var winheight = parseFloat($(window).height());
+            //内容总高度
+            var conheight = parseFloat($(document).height())-downrange; 
+            
+             mainheight = parseFloat($main.height());
+            //总高度
+            totalheight = scrolltotop + winheight;
+
+            //判断是否加载，当操作高度比内容大，空间充裕->加载
+            var shownum = Math.round(conheight/36);
+            ajaxLoad(num,shownum );
+            num += shownum ;
+            $debugdiv.text("totalheight:"+totalheight +" conheight：" +conheight +" mainheight:"+mainheight);
+        }
+            
+
+        $("#loadBtn").click(ifLoad);
+        
+        $(document).ready(firstLoad);
+
+        //scroll-fun
+        $(window).scroll(ifLoad);
+
+    })
+</script>
+</body>
+</html>
